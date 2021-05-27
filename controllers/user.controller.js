@@ -46,7 +46,7 @@ const usuariosPut = async (req, res = response) => {
 
     const usuario = await Usuario.findByIdAndUpdate(id, resto); // BUSCA EL REGISTRO POR ID Y LO ACTUALIZA
 
-    res.status(400).json(usuario);
+    res.json(usuario);
 }
 
 const usuariosPatch = (req, res = response) => {
@@ -56,14 +56,17 @@ const usuariosPatch = (req, res = response) => {
 }
 
 const usuariosDelete = async (req, res = response) => {
-    const { id } = req.params;
+    const { id } = req.params; // ID DEL USUARIO AL QUE QUIEREN ELIMINAR
+    //const usuarioAutenticado = req.usuario; // INFORMACIÓN DEL USUARIO QUE SE LOGEO PARA ELIMINAR A OTRO USUARIO
 
     // BORRADO FISICAMENTE
     //const usuario = await Usuario.findByIdAndDelete(id);
 
-    const usuario = await Usuario.findByIdAndUpdate(id, { estado: false });
+    const usuario = await Usuario.findByIdAndUpdate(id, { estado: false }); // USUARIO A ELIMINAR
 
-    res.json(usuario);
+    res.json({
+        usuario
+    });
 }
 
 module.exports = {
