@@ -10,10 +10,10 @@ const googleVerify = async (idToken = "") => {
         //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
     });
 
-    const { name: nombre, picture: img, email: correo } = ticket.getPayload();
+    const { sub: userId, name: nombre, picture: img, email: correo } = ticket.getPayload();
     
     return {
-        nombre, img, correo
+        userId, nombre, img, correo
     }
 }
 

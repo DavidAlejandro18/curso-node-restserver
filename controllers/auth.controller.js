@@ -51,7 +51,11 @@ const googleSignin = async (req, res = response) => {
     const { id_token } = req.body;
 
     try {
-        const { correo, nombre, img } = await googleVerify(id_token);
+        const { correo, nombre, img, userId } = await googleVerify(id_token);
+
+        // ENCRIPTAR EL ID PROPORCIONADO POR GOOGLE PARA USARLO COMO CONTRASEÑA
+        const salt = bcryptjs.genSaltSync();
+        const password = bcryptjs.hashSync(userId, salt);
     
         let usuario = await Usuario.findOne({ correo });
 
@@ -60,7 +64,7 @@ const googleSignin = async (req, res = response) => {
             const data = {
                 nombre,
                 correo,
-                password: ":P",
+                password,
                 img,
                 google: true
             };
