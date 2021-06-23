@@ -3,38 +3,40 @@ const { Usuario, Producto, Categoria } = require("../models");
 
 const buscarUsuarios = async(termino, res = response) => {
     const esMongoId = isValidObjectId(termino);
-
-    if (esMongoId) {
-        const usuario = await Usuario.findById(termino);
-
-        return res.json({
-            result: ( usuario ) ? [usuario] : []
-        });
-    }
-
     const regex = new RegExp(termino, 'i'); // EL PARAMETRO 'i' INDICA QUE NO DISTINGUE MAYUSCULAS DE MINUSCULAS
-    const usuarios = await Usuario.find({
-        // ESTO ES PARA INDICAR MULTIPLES QUERY'S DE BUSQUEDA, EN CASO DE QUE UNA NO RETORNE NADA TOMARA EL OTRO
+    let query = {
         $or: [
             { nombre: regex },
             { correo: regex }
         ],
-        // ESTO SE TIENE QUE EJECUTAR EN CONJUNTO CON LAS QUERY'S DE ARRIBA
         $and: [
             { estado: true }
         ]
-    });
+    };
 
-    res.json({
+    if (esMongoId) {
+        query = {
+            _id: termino
+        }
+    }
+
+    const [total, usuarios] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query)
+    ]);
+
+    return res.json({
+        total,
         result: usuarios
     })
 }
 
 const buscarProductos = async(termino, res = response) => {
     const esMongoId = isValidObjectId(termino);
+    let query = { precio: termino, estado: true };
 
     if (esMongoId) {
-        const productos = await Producto.find({
+        query = {
             $or: [
                 { usuario: termino },
                 { categoria: termino }
@@ -42,52 +44,44 @@ const buscarProductos = async(termino, res = response) => {
             $and: [
                 { estado: true }
             ]
-        })
-        .populate('categoria', 'nombre')
-        .populate('usuario', 'nombre');
-
-        return res.json({
-            result: productos
-        });
+        };
     }
 
-    if (isNaN(Number(termino))) {
+    if (isNaN(Number(termino)) && !esMongoId) {
         // ES UN STRING
         const regex = new RegExp(termino, 'i');
-        const productos = await Producto.find({ nombre: regex, estado: true })
-            .populate('usuario', 'nombre')
-            .populate('categoria', 'nombre');
-
-        return res.json({
-            result: productos
-        })
+        query = { nombre: regex, estado: true };
     }
 
-    // ES UN NÚMERO
-    const productos = await Producto.find({ precio: termino, estado: true })
-        .populate('usuario', 'nombre')
-        .populate('categoria', 'nombre');
+    const [total, productos] = await Promise.all([
+        Producto.countDocuments(query),
+        Producto.find(query)
+            .populate('categoria', 'nombre')
+            .populate('usuario', 'nombre')
+    ])
 
-    res.json({
-        result: productos
+    return res.json({
+        total,
+        results: productos
     });
 }
 
 const buscarCategorias = async(termino, res = response) => {
     const esMongoId = isValidObjectId(termino);
+    const regex = new RegExp(termino, 'i');
+    let query = { nombre: regex, estado: true };
 
     if (esMongoId) {
-        const categorias = await Categoria.find({ usuario: termino, estado: true }).populate('usuario', 'nombre');
-
-        return res.json({
-            result: categorias
-        });
+        query = { usuario: termino, estado: true };
     }
 
-    const regex = new RegExp(termino, 'i');
-    const categorias = await Categoria.find({ nombre: regex, estado: true }).populate('usuario', 'nombre');
+    const [total, categorias] = await Promise.all([
+        Categoria.countDocuments(query),
+        Categoria.find(query).populate('usuario', 'nombre')
+    ]);
 
-    res.json({
+    return res.json({
+        total,
         result: categorias
     });
 }
