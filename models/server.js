@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { dbConection } = require('../database/config');
+const path = require('path');
 
 class Server {
     constructor() {
@@ -50,6 +51,17 @@ class Server {
     }
 
     listen() {
+        this.app.get('/api*', (req, res) => {
+            res.status(404).json({
+                msg: '404 | NOT FOUND'
+            });
+        });
+        
+        this.app.get('*', (req, res) => {
+            res.status(404).sendFile(path.join(__dirname, '../', '/public/404.html'));
+        })
+
+
         this.app.listen(this.port, () => {
             console.log(`Server is starting on port: ${this.port}`);
         });
