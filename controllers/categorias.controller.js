@@ -11,7 +11,7 @@ const obtenerCategorias = async (req = request, res = response) => {
     // DE LO CONTRARIO, NO RETORNA NADA
     // SEPARA LOS RESULTADOS DE CADA PROMESA MEDIANTE LOS ARRAYS
     const [ total, categorias ] = await Promise.all([
-        Categoria.countDocuments(query),
+        Categoria.countDocuments(query).skip(Number(from)).limit(Number(limit)),
         Categoria
             .find(query)
             .skip(Number(from))

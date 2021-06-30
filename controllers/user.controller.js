@@ -7,7 +7,7 @@ const usuariosGet = async (req = request, res = response) => {
     const query = { estado: true }; // QUERY QUE REGRESA TODOS LOS DOCUMENTOS QUE TENGAS ESTADO EN TRUE
 
     const [ total, usuarios ] = await Promise.all([
-        Usuario.countDocuments(query), // CONTABILIZAMOS LOS DOCUMENTOS (REGISTROS)
+        Usuario.countDocuments(query).skip(Number(from)).limit(Number(limit)), // CONTABILIZAMOS LOS DOCUMENTOS (REGISTROS)
         Usuario.find(query).skip(Number(from)).limit(Number(limit))
     ]);
 
